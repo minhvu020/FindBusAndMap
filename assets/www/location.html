@@ -1,0 +1,17 @@
+<ons-page class="center bgSearch" ng-controller="LocationCtrl">
+
+  <ons-scroller>
+       
+     <ons-list modifier="inset" class="settings-list">
+     
+        <ons-list-item ng-repeat='items in list track by $index' modifier="chevron" ng-click="doSomething($index)">
+          <ons-icon icon="ion-chatboxes" fixed-width="true" style="color: #ccc"></ons-icon>
+          {{items}}
+        </ons-list-item>
+        
+     </ons-list>
+      
+   </ons-scroller> 
+        
+        
+</ons-page>
