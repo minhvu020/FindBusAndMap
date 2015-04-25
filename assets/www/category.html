@@ -1,0 +1,151 @@
+<html>
+<head>
+	<title>Category</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+
+	<!-- jQuery references -->
+	<link href="css/themes/default/jquery.mobile-1.2.0.min.css" rel="stylesheet" />
+	<link href="css/jqm-docs.css" rel="stylesheet" />
+	<script src="js/jquery.js"></script>
+	<script src="js/jquery.mobile-1.2.0.min.js"></script>
+
+	<!-- Wikilookup references -->
+	<link rel="stylesheet" type="text/css" href="css/index.css" />
+	<script type="text/javascript" src="js/index.js"></script>
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAv9eLBwnLgRG2QfwOJvLUBwRrtw1sGTtc&sensor=false&language=vi"></script>
+
+	<!-- PhoneGap references -->
+	<script type="text/javascript" src="cordova-2.5.0.js"></script>
+	<script type="text/javascript" charset="utf-8">
+		var latitude = 10.8230989;		// Khởi tọa vĩ độ ban đầu
+		var longitude = 106.6296638;	// Khởi tạo kinh độ ban đầu
+		var timthay = false;			// Vị trí điện thoại tìm thấy hay không?
+
+		// Kiếm theo nhóm
+		function findKeywords(){
+			var key = document.getElementById('search-mini').value;
+		    if(!key)return;
+		    for (i = 0; i < key.length; i++) key = key.replace(' ', '%20');
+		   
+		    if(!timthay){
+				navigator.notification.confirm(
+			            'Chưa tìm thấy vị trí hiện tại của bạn. Chúng tôi sẽ tìm kiếm tại trung tâm TP. HCM, bạn có muốn tiếp tục?',
+			            function(buttonIndex) {if(buttonIndex==2){window.location.assign("categorysearch.html#"+latitude+"@"+longitude+"$"+key);}},
+			            'Chưa tìm thấy vị trí',
+			            'Thôi,Tiếp tục'
+			        );
+			} else{window.location.assign("categorysearch.html#"+latitude+"@"+longitude+"$"+key);}
+		}
+		
+		// Wait for Cordova to load
+		document.addEventListener("deviceready", onDeviceReady, false);
+
+		// Cordova is ready
+		function onDeviceReady() {
+			var options = { timeout: 3000 };
+			watchID = navigator.geolocation.watchPosition(onSuccess, onError, options);
+			onChangeDanhMuc();
+		}
+	
+		function onSuccess(position) {
+			latitude = position.coords.latitude;
+			longitude = position.coords.longitude;
+			timthay = true;
+			var element = document.getElementById('geolocation');
+			var geocoder = new google.maps.Geocoder();
+			var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+			geocoder.geocode({'latLng' : latlng}, function(results, status) {
+				if (status == google.maps.GeocoderStatus.OK) {
+					if (results[1]) {element.innerHTML = 'Bạn đang ở ' + results[1].formatted_address;}
+					else {element.innerHTML = 'Không thể định danh được vị trí của bạn!<br/>Bạn đang ở tọa độ:<br/>Kinh độ: ' + position.coords.longitude + '<br/>Vĩ độ: ' + position.coords.latitude;}
+				} 
+				else {}
+			});
+		}
+	
+		function onError(error) {}
+		
+		function onChangeDanhMuc(){
+			var dm = document.getElementById("danhmuc");
+			var selected = dm.options[dm.selectedIndex].value;
+			if(selected == 'dichvu'){
+				var select = document.getElementById("khoakiem");
+				select.options.length = 0;
+				select.options[select.options.length] = new Option('ATM', 'atm');
+				select.options[select.options.length] = new Option('Ngân hàng', 'bank');
+				select.options[select.options.length] = new Option('Sửa xe', 'car_repair');
+				select.options[select.options.length] = new Option('Thuê xe', 'car_rental');
+				select.options[select.options.length] = new Option('Rửa xe', 'car_wash');
+				select.options[select.options.length] = new Option('Bưu điện', 'post_office');
+			}
+			else if(selected == 'muasam'){
+				var select = document.getElementById("khoakiem");
+				select.options.length = 0;
+				select.options[select.options.length] = new Option('Cửa hàng', 'store');
+				select.options[select.options.length] = new Option('Trung tâm thương mại', 'shopping_mall');
+				select.options[select.options.length] = new Option('Cửa hàng bách hoá', 'department_store');
+			}
+			else if(selected == 'giaoduc'){
+				var select = document.getElementById("khoakiem");
+				select.options.length = 0;
+				select.options[select.options.length] = new Option('Đại học - Cao đẳng', 'university');
+				select.options[select.options.length] = new Option('Trường học', 'school');
+			}
+		}
+		function onChangeKhoaKiem(){
+			var kk = document.getElementById("khoakiem");
+			var key = kk.options[kk.selectedIndex].value;
+			if(latitude == 0)
+				alert('Vị trí chưa được xác định. Vui lòng thử lại sau!');
+			window.location.assign("mapviews.html#"+latitude+"@"+longitude+"$"+key);
+		}
+	</script>
+</head>
+<body>
+<div data-role="page" class="type-interior">
+	<!-- Start Header -->
+	<div data-role="header" data-theme="f" class="ntcHeader" data-position="fixed">
+		<h1 style="text-transform: capitalize;"><b>DANH MỤC</b></h1>
+		<a href="index.html" data-icon="home" data-ajax="false" data-iconpos="notext" data-direction="reverse">Home</a>
+		<a href="about.html" data-ajax="false"  data-icon="info" data-iconpos="notext" data-transition="slideup">About</a>
+		<div data-role="header" data-theme="a" class="ui-bar ui-grid-a"	style="padding: 0px; margin-left: -3px;">
+			<div class="ui-block-a"	style="width: 70%; padding-top: 4px; padding-left: 5px">
+				<input placeholder="Gõ từ khóa tìm kiếm" type="search" data-theme="d" name="search-mini" id="search-mini" data-mini="true" />
+			</div>
+			<div class="ui-block-b" style="width: 30%;"><div><button onclick="findKeywords()"  data-theme="b">Tìm</button></div></div>
+		</div>
+	</div>
+	<!-- End Header -->
+	<!-- Start Content -->
+	<div>
+		<p id="geolocation" style="margin: 10px;">Đang dò tìm vị trí của bạn...</p>
+		<div class="ntc-content" style="overflow: hidden;">
+			<fieldset data-role="controlgroup">
+				<label for="danhmuc" class="select">Danh mục</label>
+				<select name="danhmuc" id="danhmuc" data-theme="e" onchange="onChangeDanhMuc()">
+					<option>Chọn danh mục</option>
+					<option value="dichvu">Dịch vụ</option>
+					<option value="giaoduc">Giáo dục</option>
+					<option value="giaitri">Giải trí</option>
+					<option value="muasam">Mua sắm</option>
+					<option value="cqtc">Cơ quan - Tổ chức</option>
+					<option value="diemden">Điểm đến</option>
+					<option value="congty">Công ty</option>
+					<option value="yte">Y tế</option>
+					<option value="amthuc">Ẩm thực</option>
+					<option value="khac">Khác</option>
+				</select>
+				<label for="khoakiem" class="khoakiem">Chọn khóa kiếm:</label> 
+				<select	name="khoakiem" id="khoakiem" data-theme="e" onchange="onChangeKhoaKiem()">
+					<option>Chọn khóa tìm kiếm</option>
+				</select>
+			</fieldset>
+		</div>
+		<!-- End Content -->
+		<br />
+	</div>
+</div>
+</body>
+</html>

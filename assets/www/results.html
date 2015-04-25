@@ -1,0 +1,146 @@
+﻿<html>
+<head>
+	<title>Results</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+
+	<!-- jQuery references -->
+	<link href="css/themes/default/jquery.mobile-1.2.0.min.css"	rel="stylesheet" />
+	<link href="css/jqm-docs.css" rel="stylesheet" />
+	<script src="js/jquery.js"></script>
+	<script src="js/jquery.mobile-1.2.0.min.js"></script>
+
+	<!-- Wikilookup references -->
+	<link rel="stylesheet" type="text/css" href="css/index.css" />
+	<script type="text/javascript" src="js/index.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?sensor=false&libraries=places&language=vi"></script>
+	
+	<script type="text/javascript">
+		var lat, lon, key;
+		var id = 0;
+		function findKeywords(){
+			var key = document.getElementById('search-mini').value;
+			if(!key)return;
+			for (i = 0; i < key.length; i++) key = key.replace(' ', '%20');
+			window.location.assign("results.html#"+lat+"@"+lon+"$"+key);
+			window.location.reload();
+		}
+
+		var map, placesList;
+		function initialize() {
+			// Lấy dữ liệu kinh, vĩ độ, khóa kiếm --------------------------- \\
+			var z = location.toString().indexOf('#');
+			var mySearch = location.toString().substr(z+1);
+			var x = mySearch.toString().indexOf('@');
+			var y = mySearch.toString().indexOf('$');
+			lat = mySearch.toString().substr(0, x);
+			lon = mySearch.toString().substr(x + 1, y - x - 1);
+			key = mySearch.toString().substr(y + 1);
+			for(i=0;i<key.length;i++){key = key.replace('%20',' ');}
+			var textsearch = document.getElementById('search-mini');
+			var reference = document.getElementById('reference');
+			textsearch.value = key;
+			// --------------------------------------------------------------- \\
+			
+			// Vị trí hiển thị khi bản đồ hiển thị lần đầu tiên Vị trí hiện tại của điện thoại
+			var pyrmont = new google.maps.LatLng(lat,lon);
+			
+			// Khởi tạo bản đồ
+			map = new google.maps.Map(document.getElementById('map_canvas'), {mapTypeId : google.maps.MapTypeId.ROADMAP, center : pyrmont, zoom : 15});
+	
+			// Khởi tạo đối tượng request với từ khóa tìm kiếm
+			var request = {query : key};
+			
+			// Hiển thị các địa điểm tìm được lên list có ul#places
+			placesList = document.getElementById('places');
+			
+			// request đến service
+			var service = new google.maps.places.PlacesService(map);
+		
+			// Gọi hàm callback trả kết quả về
+			service.textSearch(request, callback); // đổi hàm sử dụng API Google Place text search
+		}
+	
+		function showOnMap(vido, kinhdo, id){
+			var referenceXXX = document.getElementById('reference'+id.toString()).innerHTML;
+			window.location.assign("marked.html#"+vido+"@"+kinhdo+"$"+referenceXXX);
+		}
+		
+		function callback(results, status, pagination) {
+		    document.getElementById('ketqua').innerHTML = '<b>Không tìm thấy kết quả!</b>';
+			if (status != google.maps.places.PlacesServiceStatus.OK) {return;}
+			else {
+			    $("#ketqua").hide(); $("#themkq").show();
+
+				// Nếu có kết quả thì đưa ra danh sách
+				for ( var i = 0, place; place = results[i]; i++) {
+					var rate =''; // hiển thị rate nếu có
+					if(place.rating) rate = '<span class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + place.rating + '</span>';
+					
+					placesList.innerHTML += '<li data-role="list-divider" role="heading" class="ui-li ui-li-divider ui-bar-d ui-li-has-count">' + place.name + rate + '</li>';
+					
+					var imagesString = ''; // Hiển thị hình ảnh nếu có
+					var hinhvar = '<li data-corners="false" data-shadow="false" data-iconshadow="true" data-wrapperels="div" data-icon="arrow-r" data-iconpos="right" data-theme="d" class="ui-btn ui-btn-icon-right ui-li-has-arrow ui-li ui-li-last ui-btn-up-d">';
+					var photos = place.photos;
+	                if (photos) {
+	                	var image = photos[0].getUrl({ 'maxWidth': 80, 'maxHeight': 80 });
+	                	imagesString = '<img src="' + image + '" class="ui-li-thumb">';
+	                	hinhvar = '<li data-corners="false" data-shadow="false" data-iconshadow="true" data-wrapperels="div" data-icon="arrow-r" data-iconpos="right" data-theme="d" class="ui-btn ui-btn-icon-right ui-li-has-arrow ui-li ui-li-has-thumb ui-li-last ui-btn-up-d">'; 
+	                }
+	                
+	                var vido = place.geometry.location.lat();
+	                var kinhdo = place.geometry.location.lng();
+	                reference.innerHTML +='<p id="reference'+id.toString()+'">'+place.reference+'</p>';
+
+	                placesList.innerHTML += hinhvar + '<div class="ui-btn-inner ui-li"><div class="ui-btn-text"><a href="#" onclick="showOnMap(' + vido + ',' + kinhdo + ',' + id + ')" class="ui-link-inherit">' + imagesString + '<p class="ui-li-desc"><strong>' + place.formatted_address + '</strong></p><p class="ui-li-desc">' + place.types + '</p></a></div><span class="ui-icon ui-icon-arrow-r ui-icon-shadow">&nbsp;</span></div>';
+					id++;
+				}
+	
+				// google hỗ trợ phân trang nếu quá nhiều địa điểm trong kết quả
+				if (pagination.hasNextPage) {
+					var moreButton = document.getElementById('more');
+					moreButton.disabled = false;
+					$("#themkq").show(); 
+					google.maps.event.addDomListenerOnce(moreButton, 'click', function() {
+					    moreButton.disabled = true;
+					    $("#themkq").hide();
+						pagination.nextPage();
+					});
+				}
+			}
+		}
+		google.maps.event.addDomListener(window, 'load', initialize);	
+	</script>
+</head>
+<body>
+<div data-role="page" class="type-interior">
+	<!-- Start Header -->
+	<div data-role="header" data-theme="f" class="ntcHeader" data-position="fixed">
+		<h1 style="text-transform: capitalize;"><b>TÌM NHANH</b></h1>
+		<a data-ajax="false" href="index.html" data-icon="home" data-iconpos="notext" data-direction="reverse">Home</a>
+		<a data-ajax="false" href="about.html" data-icon="info" data-iconpos="notext" data-transition="slideup">About</a>
+		<div data-role="header" data-theme="a" class="ui-bar ui-grid-a" style="padding: 0px; margin-left: -3px;">
+			<div class="ui-block-a" style="width: 70%; padding-top: 4px; padding-left: 5px">
+				<input placeholder="Bạn muốn tìm gì?" type="search" data-theme="d" name="search-mini" id="search-mini" data-mini="true" />
+			</div>
+			<div class="ui-block-b" style="width: 30%;"><div><button type="submit" data-theme="b" onclick="findKeywords()">Tìm</button></div></div>
+		</div>
+	</div>
+	<!-- End Header -->
+
+	<!-- Start Content -->
+	<div class="ntc-content" style="text-transform: none; overflow: hidden;">
+		<div id="ketqua" style="text-align:center; margin:10px;"><b>Vui lòng đợi trong giây lát...</b></div>
+		<ul data-role="listview" data-theme="d" data-divider-theme="d" id="places"></ul>
+    	<div id="themkq" style="display:none;"><button id="more" data-theme="e">Tìm thêm</button></div>
+    </div>
+	<!-- End Content -->
+	
+	<!-- Start Footer -->
+	<div id="map_canvas" style="display:none;"></div>
+	<div id="reference" style="display:none;"></div>
+	<!-- End Footer -->
+</div>
+</body>
+</html>

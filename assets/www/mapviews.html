@@ -1,0 +1,69 @@
+﻿<html>
+<head>
+	<title>Map Views</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+
+	<!-- Wikilookup references -->
+	<link rel="stylesheet" type="text/css" href="css/googlemap.css" />
+	<script src="https://maps.googleapis.com/maps/api/js?sensor=false&language=vi&libraries=places"></script>
+	
+	<script>
+		var map, placesList, lat, lon, key;
+		function initialize() {
+			// Lấy dữ liệu kinh, vĩ độ, khóa kiếm --------------------------- \\
+			var z = location.toString().indexOf('#');
+			var mySearch = location.toString().substr(z+1);
+			var x = mySearch.toString().indexOf('@');
+			var y = mySearch.toString().indexOf('$');
+
+			// Khởi tạo các đối tượng
+			lat = mySearch.toString().substr(0, x);
+			lon = mySearch.toString().substr(x + 1, y - x - 1);
+			key = mySearch.toString().substr(y + 1);
+			// -------------------------------------------------------------- \\
+			
+			
+			map = new google.maps.Map(document.getElementById('map_canvas'), {mapTypeId: google.maps.MapTypeId.ROADMAP, center: new google.maps.LatLng(lat, lon), zoom: 15});
+	        infoWindow = new google.maps.InfoWindow();
+	        service = new google.maps.places.PlacesService(map);
+	        google.maps.event.addListenerOnce(map, 'bounds_changed', performSearch);
+		}
+
+      	function performSearch() {
+      		var request = {bounds: map.getBounds(), keyword: key};
+        	service.radarSearch(request, callback);
+      	}
+
+     	function callback(results, status) {
+        	if (status != google.maps.places.PlacesServiceStatus.OK) {
+          		// Không tìm thấy kết quả, chuyển đến cách tìm khác
+          		window.location.assign("mapviewsmore.html#"+lat+"@"+lon+"$"+key);
+          		return;
+        	}
+        	
+        	for (var i = 0, result; result = results[i]; i++) {createMarker(result);}
+      	}
+     
+      	// Đánh dấu vị trí
+		function createMarker(place) {
+	        var marker = new google.maps.Marker({map: map, position: place.geometry.location});
+	
+	        google.maps.event.addListener(marker, 'click', function() {
+	        	service.getDetails(place, function(result, status) {
+	            	if (status == google.maps.places.PlacesServiceStatus.OK) {
+	            		infoWindow.setContent('<b>'+result.name+'</b><p>'+ result.formatted_address +'<p>');
+		            	infoWindow.open(map, marker);
+	            	}
+	          	});
+	        });
+      	}
+
+		google.maps.event.addDomListener(window, 'load', initialize);
+	</script>
+</head>
+<body>
+	<div id="map_canvas"></div>
+</body>
+</html>
