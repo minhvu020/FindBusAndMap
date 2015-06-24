@@ -1,0 +1,117 @@
+﻿<html>
+<head>
+	<title>Wikilookup</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+
+	<!-- jQuery references -->
+	<link href="css/themes/default/jquery.mobile-1.2.0.min.css"	rel="stylesheet" />
+	<link href="css/jqm-docs.css" rel="stylesheet" />
+	<script src="js/jquery.js"></script>
+	<script src="js/jquery.mobile-1.2.0.min.js"></script>
+
+	<!-- Wikilookup references -->
+	<link rel="stylesheet" type="text/css" href="css/index.css" />
+	<script type="text/javascript" src="js/index.js"></script>
+	
+	<!-- PhoneGap references -->
+	<script type="text/javascript" src="cordova-2.5.0.js"></script>
+	
+	<script type="text/javascript" charset="utf-8">
+		
+		 var db;
+		 
+		// Wait for Cordova to load
+		document.addEventListener("deviceready", onDeviceReady, false);
+	
+		// Cordova is ready
+		function onDeviceReady() {
+			db = window.openDatabase("DemoDB", "1.0", "DemoDB", 1000000);  
+       		db.transaction(getBus, transaction_error);
+		}
+		
+		function onSuccess(position) {
+			
+		}
+		function onError(error) { }
+		
+	function getBus(tx) {
+		var sql = "select BUS._id, BUS.BusName from BUS";
+					
+		tx.executeSql(sql, [], getBus_success);
+	}
+
+	function transaction_error(tx, error) {
+	    alert("Database Error: " + error);
+	}
+
+	function getBus_success(tx, results) 
+	{	
+	    var len = results.rows.length;
+	    for (var i=0; i<len; i++) {		
+			var bus = results.rows.item(i);
+				 	
+			 	$('#listBus').append('<li onclick="go('+bus._id+')">' +
+			 	bus._id + '-' + bus.BusName + '</li>');		
+ 	
+	    }		
+		db = null;
+	}
+	
+	
+	function go(key){
+			
+				navigator.notification.confirm(
+			            'Bạn muốn đi lượt nào?',
+			            function(buttonIndex) {
+			            	if(buttonIndex==2)
+			            	{
+			            	
+			            		window.location.assign("busDirection.html#"  + "A"  +"@" +key);
+			            	}
+			            	if(buttonIndex==1)
+			            	{
+			            	
+			            		window.location.assign("busDirection.html#"  + "B"  +"@" +key);
+			            	}
+			            },
+			            'Chọn lượt đi?',
+			            'Lượt về,Lượt đi'
+			        );
+      			
+		}
+	
+		function gotoHome()
+		 {
+		 	location.replace("index.html");
+		 }
+
+	</script>
+</head>
+<body>
+<div data-role="page" id="page1" class="type-interior">
+
+
+	<!-- Start Header -->
+	<div data-role="header" data-theme="f" class="ntcHeader" data-position="fixed">
+		<h1 style="text-transform: capitalize;"><b>DANH SÁCH TUYẾN </b></h1>
+		<a href="#" onclick="gotoHome()" data-icon="home" data-iconpos="notext" data-direction="reverse">Home</a>
+		<a href="about.html" data-icon="info" data-iconpos="notext" data-transition="slideup">About</a>
+	</div>
+	<!-- End Header -->
+
+	<!-- Start Content -->
+	 <div data-role="content">   
+               <div data-role="main" class="ui-content">
+			    <ul data-role="listview" id="listBus">
+
+			    </ul>
+			  </div>
+      </div>
+	<!-- End Content -->
+</div>
+
+</style>
+</body>
+</html>

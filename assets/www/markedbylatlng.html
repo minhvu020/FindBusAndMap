@@ -13,6 +13,8 @@
 
 <script>
 	var lat, lon;
+	var map; 
+	
     function initialize() {
 	   	// Lấy dữ liệu kinh, vĩ độ, khóa kiếm --------------------------- \\
 		var z = location.toString().indexOf('#');
@@ -23,15 +25,38 @@
 		lon = mySearch.toString().substr(x + 1, y - x - 1);
 		// --------------------------------------------------------------- \\
 		
-        var map = new google.maps.Map(document.getElementById('map_canvas'), {
+        map = new google.maps.Map(document.getElementById('map_canvas'), {
           mapTypeId: google.maps.MapTypeId.ROADMAP,
           center: new google.maps.LatLng(lat, lon),
           zoom: 15
         });
 
-        var marker = new google.maps.Marker({map: map, position: new google.maps.LatLng(lat, lon)});
+         var iconImage = new google.maps.MarkerImage("icon/current.png",
+							  new google.maps.Size(20, 34),
+							  new google.maps.Point(0,0),
+							  new google.maps.Point(9, 34));
+                    
+         var currentmarker = new google.maps.Marker({map: map, position:new google.maps.LatLng(lat, lon), icon:iconImage});
+        
+         var currentinfoWindow = new google.maps.InfoWindow();
+         
+         currentinfoWindow.setContent('<b>'  +  "Your location!"   +  '</b>');            			
+		 currentinfoWindow.open(map, currentmarker);
+                 
+          google.maps.event.addListener(currentmarker, 'click', function() {
+	            		currentinfoWindow.setContent('<b>'  +  "Your location!"   +  '</b>');            			
+		            	currentinfoWindow.open(map, currentmarker);		
+		            	           
+	          	});      
+	          	
+	      google.maps.event.addListener(map, 'click', function() {
+			   				 currentinfoWindow.close();
+			  			});     	
+	          	
      }
+     
      google.maps.event.addDomListener(window, 'load', initialize);
+     
 </script>
 </head>
 <body>

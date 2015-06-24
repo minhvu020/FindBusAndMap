@@ -26,8 +26,28 @@
 		
 		var watchID = null;
 		
+		function checkInternet()
+		{
+			var result = false;
+			
+			var status = navigator.onLine ? 'online' : 'offline';
+            
+            if(status == "online")
+            {
+            	result = true;
+            }
+            
+            return result;
+		}
+		
+		
 		function gotoMap(){
-			window.location.assign("markedbylatlng.html#"+latitude+"@"+longitude+"$");
+			if(checkInternet()== false)
+			{
+				alert("Vui lòng kết nối mạng để sử dụng tính năng này!");
+			}else{
+				window.location.assign("markedbylatlng.html#"+latitude+"@"+longitude+"$");
+			}
 		}
 		
 		// Cordova is ready
@@ -38,66 +58,101 @@
 		 
 		// onSuccess Geolocation
 		function onSuccess(position) {
-			latitude = position.coords.latitude;
-			longitude = position.coords.longitude;
-			
+		
+			//Đang dò vị trí ...
 			var element = document.getElementById('geolocation');
-			var data = document.getElementById('datacontent');
-			data.style.display = "block";
-			element.style.display = "none";
+				
+			if(checkInternet()== false)
+			{
+				alert("Vui lòng kết nối mạng để sử dụng tính năng này!");
+				element.innerHTML = 'Không có kết nối! ';
+				
+			}else{
 			
-			var datavitri = document.getElementById('datavitri');
-			datavitri.innerHTML += '<b>Vĩ độ: </b>' + position.coords.latitude + '<br/><b>Kinh độ: </b>' +  position.coords.longitude;
-			
-			var geocoder = new google.maps.Geocoder();
-			
-			var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-			geocoder.geocode({'latLng' : latlng}, function(results, status) {
-				if (status == google.maps.GeocoderStatus.OK) {
-					if (results[1]) {
-						element.innerHTML = 'Bạn đang ở ' + results[1].formatted_address;
-						datavitri.innerHTML += '<br/><b>Địa danh: </b>' + results[1].formatted_address;
+				latitude = position.coords.latitude;
+				longitude = position.coords.longitude;
+				
+				
+				
+				var data = document.getElementById('datacontent');
+				data.style.display = "block";
+				
+				var datavitri = document.getElementById('datavitri');
+				datavitri.innerHTML += '<b>Vĩ độ: </b>' + position.coords.latitude + '<br/><b>Kinh độ: </b>' +  position.coords.longitude;
+				
+				var geocoder = new google.maps.Geocoder();
+				
+				var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+				geocoder.geocode({'latLng' : latlng}, function(results, status) {
+				
+					if (status == google.maps.GeocoderStatus.OK) {
+	
+						if (results[1]) {
+							element.innerHTML = 'Bạn đang ở ' + results[1].formatted_address;
+							datavitri.innerHTML += '<br/><b>Địa danh: </b>' + results[1].formatted_address;
+						}
+						else {
+							element.innerHTML = 'Không thể định danh được vị trí của bạn!<br/>Bạn đang ở tọa độ:<br/>Kinh độ: ' + 
+							position.coords.longitude + '<br/>Vĩ độ: ' + position.coords.latitude;
+						}
+					} 
+					else {	
 					}
-					else {element.innerHTML = 'Không thể định danh được vị trí của bạn!<br/>Bạn đang ở tọa độ:<br/>Kinh độ: ' + position.coords.longitude + '<br/>Vĩ độ: ' + position.coords.latitude;}
-				} 
-				else {}
-				// Lấy thời gian -----------------------------------------------------------------------------------------------------------------------------------
-				var datathoigian = document.getElementById('thoigian');
-				var now = new Date(); 
-				var now_utc = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),  now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
-				document.write(now_utc.toString());
-				datathoigian.innerHTML = '<b>Local time: </b>'+now.toString();
-				datathoigian.innerHTML += '<br/><b>UTC/GMT: </b>'+now_utc.toString();
-				// -------------------------------------------------------------------------------------------------------------------------------------------------
-			});
+	
+					// Lấy thời gian -----------------------------------------------------------------------------------------------------------------------------------
+					var datathoigian = document.getElementById('thoigian');
+					var now = new Date(); 
+					
+					var now_utc = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),  now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
+					
+					//document.write(now_utc.toString());
+					datathoigian.innerHTML = '<b>Local time: </b>'+now.toString();
+					datathoigian.innerHTML += '<br/><b>UTC/GMT: </b>'+now_utc.toString();
+					
+					// -------------------------------------------------------------------------------------------------------------------------------------------------
+				});
+			}
 		}
+		
 		// onError Callback receives a PositionError object
 	    function onError(error) {
 	    }
+	    
+	 function gotoHome()
+	 {
+	 	location.replace("index.html");
+	 }
+	    
 	</script>
 </head>
 <body>
 	<!-- Start Header -->
 	<div data-role="header" data-theme="f" class="ntcHeader" data-position="fixed">
 		<h1 style="text-transform: capitalize;"><b>VỊ TRÍ</b></h1>
-		<a data-ajax="false" href="index.html" data-icon="home" data-iconpos="notext" data-direction="reverse">Home</a>
+		<a data-ajax="false" href="#" onclick="gotoHome()" data-icon="home" data-iconpos="notext" data-direction="reverse">Home</a>
 		<a data-ajax="false" href="about.html" data-icon="info" data-iconpos="notext" data-transition="slideup">About</a>
 	</div>
 	<p id="geolocation" style="margin: 10px; text-align: center;">Đang dò tìm vị trí của bạn...</p>
 	
 	<div data-role="collapsible-set" id = "datacontent" style="display: none;">
-	<marquee><h4>Tính năng sẽ được nâng cấp sau!</h4></marquee>
+<!-- 	<marquee><h4>Tính năng sẽ được nâng cấp sau!</h4></marquee> -->
+	
 		<div id="vitri" data-role="collapsible" data-collapsed="true" data-theme="e">
 			<h3>Vị trí</h3>
-			<p id="datavitri"><a onclick="gotoMap()" data-role="button" data-theme="b">Xem trên bản đồ</a><br/></p>
+			<p id="datavitri">
+				<a onclick="gotoMap()" data-role="button" data-theme="b">
+					Xem trên bản đồ
+				</a><br/>
+			</p>
 		</div>
+		
 		<div data-role="collapsible">
 			<h3>Thời gian</h3>
 			<p id="thoigian"></p>
 		</div>
 		<div data-role="collapsible" data-theme="e">
 			<h3>Thời tiết</h3>
-			<p>Thời tiết sẻ được cập nhật tại đây</p>
+			<marquee><h4>Tính năng sẽ được nâng cấp sau!</h4></marquee>
 		</div>
 	</div>
 </body>

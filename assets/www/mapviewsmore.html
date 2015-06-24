@@ -12,6 +12,10 @@
 	<script>
 		var map, placesList, service, infoWindow;
 		var lat, lon, key;
+				var directionsDisplay, 
+                directionsService;
+                var currentPosition;
+		
 		function initialize() {
 			// Lấy dữ liệu transfer
 				// Lấy dữ liệu kinh, vĩ độ, khóa kiếm --------------------------- \\
@@ -26,6 +30,9 @@
 			key = mySearch.toString().substr(y + 1);
 			// -------------------------------------------------------------- \\
 			
+			 directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true}); 
+             directionsService = new google.maps.DirectionsService();
+             currentPosition = new google.maps.LatLng(lat, lon);
 			
 			// Vị trí hiển thị khi bản đồ hiển thị lần đầu tiên
 			var pyrmont = new google.maps.LatLng(lat, lon);
@@ -35,6 +42,31 @@
 				center : pyrmont,
 				zoom : 15
 			});
+			
+			directionsDisplay.setMap(map);
+			
+			  var iconImage = new google.maps.MarkerImage("icon/current.png",
+							  new google.maps.Size(20, 34),
+							  new google.maps.Point(0,0),
+							  new google.maps.Point(9, 34));
+                    
+                var currentmarker = new google.maps.Marker({map: map, position:currentPosition, icon:iconImage});
+                
+                var currentinfoWindow = new google.maps.InfoWindow();
+                 
+                google.maps.event.addListener(currentmarker, 'click', function() {
+	            		currentinfoWindow.setContent('<b>'  +  "Your location!"   +  '</b>');            			
+		            	currentinfoWindow.open(map, currentmarker);		
+		            	           
+	          	});
+	          	
+	          	 google.maps.event.addListener(map, 'click', function() {
+			   				 currentinfoWindow.close();
+			  			});
+			  			
+	          	// Show current location
+	          	currentinfoWindow.setContent('<b>'  +  "Your location!"   +  '</b>');            			
+		        currentinfoWindow.open(map, currentmarker);	
 
 			var place_type = document.getElementById('place_type');
 
@@ -65,13 +97,48 @@
 	
 	        google.maps.event.addListener(marker, 'click', function() {
 	        	service.getDetails(place, function(result, status) {
+	            	
 	            	if (status == google.maps.places.PlacesServiceStatus.OK) {
-						var data = '<b>'+result.name+'</b><p>'+ result.formatted_address +'<p>';
-						infowindow.setContent(data);
-					    infowindow.open(map, marker);
-	            	}
+	            		infowindow.setContent('<b>'+result.name+'</b><p>'+ result.formatted_address +'<p>'+
+	            			'<button onclick="myFunction('+ place.geometry.location.lng()+','+ place.geometry.location.lat() + ')">Direction</button>');
+	            			
+		            	infowindow.open(map, marker);
+		            	
+	            	}	            	
 	          	});
 	        });
+	        
+	          // Close infoWindow when click in map
+				        google.maps.event.addListener(map, 'click', function() {
+			   				 infowindow.close();
+			  			});
+	        
+	        
+      	}
+      	
+      	function myFunction(lo,la) {
+      		 
+		   var target = new google.maps.LatLng(la, lo);
+      		
+      		 var request = {
+                        origin:currentPosition, 
+                        destination:target,
+                        travelMode: window.google.maps.TravelMode.DRIVING
+                    };
+                    
+              directionsService.route(request, function(response, status) {
+                        if (status == google.maps.DirectionsStatus.OK) {                
+                            directionsDisplay.setDirections(response); 
+                        }
+                        else {
+                        	alert("You should enroll in  all field require 1" );
+                           
+                        }
+                    });
+               
+	          	// Close infoWindow
+	          	infowindow.close();
+	      
       	}
 		
 		// Khởi tạo, kích hoạt Google Map API

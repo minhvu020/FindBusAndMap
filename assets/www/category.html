@@ -25,18 +25,24 @@
 
 		// Kiếm theo nhóm
 		function findKeywords(){
-			var key = document.getElementById('search-mini').value;
-		    if(!key)return;
-		    for (i = 0; i < key.length; i++) key = key.replace(' ', '%20');
-		   
-		    if(!timthay){
-				navigator.notification.confirm(
-			            'Chưa tìm thấy vị trí hiện tại của bạn. Chúng tôi sẽ tìm kiếm tại trung tâm TP. HCM, bạn có muốn tiếp tục?',
-			            function(buttonIndex) {if(buttonIndex==2){window.location.assign("categorysearch.html#"+latitude+"@"+longitude+"$"+key);}},
-			            'Chưa tìm thấy vị trí',
-			            'Thôi,Tiếp tục'
-			        );
-			} else{window.location.assign("categorysearch.html#"+latitude+"@"+longitude+"$"+key);}
+		
+			if(checkInternet()== false)
+			{
+				alert("Vui lòng kết nối mạng để sử dụng tính năng này!");
+			}else{
+				var key = document.getElementById('search-mini').value;
+			    if(!key)return;
+			    for (i = 0; i < key.length; i++) key = key.replace(' ', '%20');
+			   
+			    if(!timthay){
+					navigator.notification.confirm(
+				            'Chưa tìm thấy vị trí hiện tại của bạn. Chúng tôi sẽ tìm kiếm tại trung tâm TP. HCM, bạn có muốn tiếp tục?',
+				            function(buttonIndex) {if(buttonIndex==2){window.location.assign("categorysearch.html#"+latitude+"@"+longitude+"$"+key);}},
+				            'Chưa tìm thấy vị trí',
+				            'Thôi,Tiếp tục'
+				        );
+				} else{window.location.assign("categorysearch.html#"+latitude+"@"+longitude+"$"+key);}
+			}
 		}
 		
 		// Wait for Cordova to load
@@ -46,23 +52,35 @@
 		function onDeviceReady() {
 			var options = { timeout: 3000 };
 			watchID = navigator.geolocation.watchPosition(onSuccess, onError, options);
-			onChangeDanhMuc();
+			onChangeDanhMuc();// Loc theo danh muc...
 		}
 	
 		function onSuccess(position) {
-			latitude = position.coords.latitude;
-			longitude = position.coords.longitude;
-			timthay = true;
+		
 			var element = document.getElementById('geolocation');
-			var geocoder = new google.maps.Geocoder();
-			var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-			geocoder.geocode({'latLng' : latlng}, function(results, status) {
-				if (status == google.maps.GeocoderStatus.OK) {
-					if (results[1]) {element.innerHTML = 'Bạn đang ở ' + results[1].formatted_address;}
-					else {element.innerHTML = 'Không thể định danh được vị trí của bạn!<br/>Bạn đang ở tọa độ:<br/>Kinh độ: ' + position.coords.longitude + '<br/>Vĩ độ: ' + position.coords.latitude;}
-				} 
-				else {}
-			});
+			
+			if(checkInternet()== false)
+			{
+				element.innerHTML = 'Không có kết nối!';
+			}else{
+			
+				latitude = position.coords.latitude;
+				longitude = position.coords.longitude;
+				timthay = true;
+								
+				var geocoder = new google.maps.Geocoder();
+				var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+				
+				
+				geocoder.geocode({'latLng' : latlng}, function(results, status) {
+					if (status == google.maps.GeocoderStatus.OK) {
+						if (results[1]) {element.innerHTML = 'Bạn đang ở ' + results[1].formatted_address;}
+						else {element.innerHTML = 'Không thể định danh được vị trí của bạn!<br/>Bạn đang ở tọa độ:<br/>Kinh độ: ' + position.coords.longitude + '<br/>Vĩ độ: ' + position.coords.latitude;}
+					} 
+					else {}
+				});
+			
+			}
 		}
 	
 		function onError(error) {}
@@ -93,14 +111,42 @@
 				select.options[select.options.length] = new Option('Đại học - Cao đẳng', 'university');
 				select.options[select.options.length] = new Option('Trường học', 'school');
 			}
+			
 		}
 		function onChangeKhoaKiem(){
-			var kk = document.getElementById("khoakiem");
-			var key = kk.options[kk.selectedIndex].value;
-			if(latitude == 0)
-				alert('Vị trí chưa được xác định. Vui lòng thử lại sau!');
-			window.location.assign("mapviews.html#"+latitude+"@"+longitude+"$"+key);
+		
+			if(checkInternet()== false)
+			{
+				alert("Vui lòng kết nối mạng để sử dụng tính năng này!");
+				
+			}else{
+				var kk = document.getElementById("khoakiem");
+				var key = kk.options[kk.selectedIndex].value;
+				if(latitude == 0)
+					alert('Vị trí chưa được xác định. Vui lòng thử lại sau!');
+				window.location.assign("mapviews.html#"+latitude+"@"+longitude+"$"+key);
+			}
 		}
+		
+		function gotoHome()
+		 {
+		 	location.replace("index.html");
+		 }
+		 
+		function checkInternet()
+		{
+			var result = false;
+			
+			var status = navigator.onLine ? 'online' : 'offline';
+            
+            if(status == "online")
+            {
+            	result = true;
+            }
+            
+            return result;
+		}
+	 
 	</script>
 </head>
 <body>
@@ -108,7 +154,7 @@
 	<!-- Start Header -->
 	<div data-role="header" data-theme="f" class="ntcHeader" data-position="fixed">
 		<h1 style="text-transform: capitalize;"><b>DANH MỤC</b></h1>
-		<a href="index.html" data-icon="home" data-ajax="false" data-iconpos="notext" data-direction="reverse">Home</a>
+		<a href="#" onclick="gotoHome()" data-icon="home" data-ajax="false" data-iconpos="notext" data-direction="reverse">Home</a>
 		<a href="about.html" data-ajax="false"  data-icon="info" data-iconpos="notext" data-transition="slideup">About</a>
 		<div data-role="header" data-theme="a" class="ui-bar ui-grid-a"	style="padding: 0px; margin-left: -3px;">
 			<div class="ui-block-a"	style="width: 70%; padding-top: 4px; padding-left: 5px">
@@ -128,14 +174,7 @@
 					<option>Chọn danh mục</option>
 					<option value="dichvu">Dịch vụ</option>
 					<option value="giaoduc">Giáo dục</option>
-					<option value="giaitri">Giải trí</option>
-					<option value="muasam">Mua sắm</option>
-					<option value="cqtc">Cơ quan - Tổ chức</option>
-					<option value="diemden">Điểm đến</option>
-					<option value="congty">Công ty</option>
-					<option value="yte">Y tế</option>
-					<option value="amthuc">Ẩm thực</option>
-					<option value="khac">Khác</option>
+					<option value="muasam">Mua sắm</option>	
 				</select>
 				<label for="khoakiem" class="khoakiem">Chọn khóa kiếm:</label> 
 				<select	name="khoakiem" id="khoakiem" data-theme="e" onchange="onChangeKhoaKiem()">

@@ -49,19 +49,72 @@
 		}
 		
 		function gotoMapViews(key){
-			if(!timthay){
-				navigator.notification.confirm(
-			            'Chưa tìm thấy vị trí hiện tại của bạn. Chúng tôi sẽ tìm kiếm tại trung tâm TP. HCM, bạn có muốn tiếp tục?',
-			            function(buttonIndex) {if(buttonIndex==2){window.location.assign("mapviews.html#"+latitude+"@"+longitude+"$"+key);}},
-			            'Chưa tìm thấy vị trí',
-			            'Thôi,Tiếp tục'
-			        );
-			} else{window.location.assign("mapviews.html#"+latitude+"@"+longitude+"$"+key);}
+		
+			if(checkInternet()== false)
+			{
+				alert("Vui lòng kết nối mạng để sử dụng tính năng này!");
+			}else{
+				
+				if(!timthay){
+					navigator.notification.confirm(
+				            'Chưa tìm thấy vị trí hiện tại của bạn. Chúng tôi sẽ tìm kiếm tại trung tâm TP. HCM, bạn có muốn tiếp tục?',
+				            function(buttonIndex) {if(buttonIndex==2){window.location.assign("mapviews.html#"+latitude+"@"+longitude+"$"+key);}},
+				            'Chưa tìm thấy vị trí',
+				            'Thôi,Tiếp tục'
+				        );
+				} else{window.location.assign("mapviews.html#"+latitude+"@"+longitude+"$"+key);}
+			}
 		}
 		function gotoFindRoad(){
 		
-			window.location.assign("FindRoad.html");
+			if(checkInternet()== false)
+			{
+				alert("Vui lòng kết nối mạng để sử dụng tính năng này!");
+			}else{
+			   window.location.assign("FindRoad.html");
+			}
 		}
+		
+		function selectTypeBus(key){
+		
+			if(checkInternet()== false)
+			{
+				alert("Vui lòng kết nối mạng để sử dụng tính năng này!");
+			}else{
+				
+				navigator.notification.confirm(
+			            'Bạn muốn tìm các trạm Xe Buýt quanh đây hay tìm kiếm tuyến?',
+			            function(buttonIndex) {
+			            	if(buttonIndex==2)
+			            	{	
+			            		window.location.assign("listBus.html");
+			            	}
+			            	if(buttonIndex==1)
+			            	{
+			            	
+			            		gotoMapViews(key);
+			            	}
+			            },
+			            'Chọn loại tìm kiếm',
+			            'Trạm,Các tuyến'
+			        );
+			  }
+		}
+		
+		function checkInternet()
+		{
+			var result = false;
+			
+			var status = navigator.onLine ? 'online' : 'offline';
+            
+            if(status == "online")
+            {
+            	result = true;
+            }
+            
+            return result;
+		}
+		
 	</script>
 </head>
 <body>
@@ -69,19 +122,13 @@
 	<!-- Start Header -->
 	<div data-role="header" data-theme="f" class="ntcHeader" data-position="fixed">
 		<h1 style="text-transform: capitalize;"><b>TÌM NHANH</b></h1>
-		<a href="index.html" data-icon="home" data-iconpos="notext" data-direction="reverse">Home</a>
+		<a href="#" data-icon="home" data-iconpos="notext" data-direction="reverse">Home</a>
 		<a href="about.html" data-icon="info" data-iconpos="notext" data-transition="slideup">About</a>
-		<div data-role="header" data-theme="a" class="ui-bar ui-grid-a" style="padding: 0px; margin-left: -3px;">
-			<div class="ui-block-a" style="width: 70%; padding-top: 4px; padding-left: 5px">
-				<input placeholder="Bạn muốn tìm gì?" type="search" data-theme="d" name="search-mini" id="search-mini" data-mini="true" />
-			</div>
-			<div class="ui-block-b" style="width: 30%;"><div><button type="submit" data-theme="b" onclick="findKeywords()">Tìm</button></div></div>
-		</div>
 	</div>
 	<!-- End Header -->
 
 	<!-- Start Content -->
-	<div class="ntc-content" style="text-transform: none; overflow: hidden;">
+	<div data-role="content" class="ntc-content" style="text-transform: none; overflow: hidden;">
 		<div data-role="header" data-id="foo1" data-theme="e" class="nav-glyphish">
 			<div data-role="navbar" class="nav-glyphish">
 				<ul>
@@ -96,7 +143,7 @@
 				<ul>
 					<li><a href="#" data-ajax="false" onclick="gotoMapViews('gas_station')" class="ntc-chucnang" id="cayxang" data-icon="custom">Cây xăng</a></li>
 					<li><a href="#" data-ajax="false" onclick="gotoMapViews('atm')" class="ntc-chucnang" id="atm" data-icon="custom">ATM</a></li>
-					<li><a href="#" data-ajax="false" onclick="gotoMapViews('bus_station')" class="ntc-chucnang" id="bus" data-icon="custom">Xe buýt</a></li>
+					<li><a href="#" data-ajax="false" onclick="selectTypeBus('bus_station')" class="ntc-chucnang" id="bus" data-icon="custom">Xe buýt</a></li>
 				</ul>
 			</div>
 		</div>
@@ -122,20 +169,25 @@
 	<!-- End Content -->
 	
 	<!-- Start Footer -->
-	<!-- 
-	<div data-role="footer" data-position="fixed">
-		<div data-role="navbar" data-iconpos="right">
-			<ul>
-				<li><a href="#" class="ui-btn-active" data-icon="grid">Địa điểm</a></li>
-				<li><a href="#" data-icon="search">Tra cứu</a></li>
-				<li><a href="#" data-icon="gear">Tiện ích</a></li>
-			</ul>
+	
+	<div data-role="footer" data-theme="f" class="ntcHeader" data-position="fixed">
+		
+		<div data-role="header" class="ui-bar ui-grid-a" style="padding: 0px; margin-left: -3px;">
+			<div align="center" style="width: 100%; padding-top: 4px; padding-left: 5px"> 
+				<h1><b>ĐỒ ÁN CHUYÊN NGHÀNH</b></h1>
+			</div>
+
 		</div>
 	</div>
-	 -->
+	
 	<!-- End Footer -->
 </div>
+
+
 <style>
+
+
+
 .nav-glyphish .ui-btn .ui-btn-inner {
 	padding-top: 80px !important;
 }
